@@ -1,11 +1,11 @@
 part of aristadart.general;
 
-class Sitio
+class Sitio extends Ref
 {
-    String nombre;
-    String descripcion;
-    List<ImagenSlider> slider;
-    List<Categoria> destacadas;
-    List<Categoria> categorias;
+    @Field() String nombre;
+    @Field() String descripcion;
+    @Field() List<ImagenSlider> slider;
+    @Field() List<Categoria> destacadas;
+    @Field() List<Categoria> categorias;
 }
 

@@ -2,7 +2,7 @@ part of aristadart.general;
 
 class ImagenSlider
 {
-    String caption;
-    FileDb imagen;
+    @Field() String caption;
+    @Field() FileDb imagen;
 }
 

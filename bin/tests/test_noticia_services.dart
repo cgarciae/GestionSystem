@@ -5,15 +5,17 @@ noticiaServicesTests ()
     MongoDbManager dbManager = new MongoDbManager("mongodb://${partialDBHost}/userTesting");
     group("Noticia Services Tests", ()
     {
-        User basicUser;
+        ProtectedUser basicUser;
         var id = newId();
-        var n = 1;
         
         createBasicUser () async
         {
             //Insertar usuario
             MongoDb db = await dbManager.getConnection();
-            basicUser.id = newId();
+            basicUser = new ProtectedUser()
+                ..id = newId()
+                ..admin = true;
+            
             await db.insert (Col.user, basicUser);
             dbManager.closeConnection (db);
         }
@@ -24,10 +26,7 @@ noticiaServicesTests ()
             app.addPlugin (AuthenticationPlugin);
             app.addPlugin (ErrorCatchPlugin);
             
-            basicUser = new User ()
-                ..id = id;
-            
-            createBasicUser();
+            await createBasicUser();
         });
 
         //remove all loaded handlers
@@ -60,14 +59,16 @@ noticiaServicesTests ()
             //Crear mock request
             MockRequest req = new MockRequest
             (
-                '/noticia', method: app.POST
+                '/noticia', method: app.POST, headers: {Header.authorization : basicUser.id}
             );
       
             //dispatch request
             MockHttpResponse resp = await app.dispatch(req);
-          
+            
             Noticia respNoticia = decodeJson(resp.mockContent, Noticia);
           
+            
+            
             expect (respNoticia.titulo, noticia.titulo, reason: resp.mockContent);
             expect (respNoticia.texto, noticia.texto);
         });

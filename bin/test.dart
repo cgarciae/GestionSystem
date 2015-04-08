@@ -19,6 +19,7 @@ import 'package:redstone_mapper/plugin.dart';
 
 part 'tests/test_user_services.dart';
 part 'tests/test_noticia_services.dart';
+part 'tests/test_home_services.dart';
 part 'tests/test_models.dart';
 part 'tests/mocks.dart';
 
@@ -29,5 +30,6 @@ main()
     
     userServicesTests ();
     noticiaServicesTests ();
+    homeServicesTests ();
     testModels ();
 }

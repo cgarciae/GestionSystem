@@ -8,6 +8,7 @@ import "package:googleapis_auth/auth.dart" as auth;
 
 part 'models/user.dart';
 part 'models/producto.dart';
+part 'models/home.dart';
 part 'models/sitio.dart';
 part 'models/categoria.dart';
 part 'models/noticia.dart';
@@ -120,6 +121,8 @@ abstract class Col
     static const String localTarget = 'localTarget';
     static const String file = "file";
     static const String noticia = "noticia";
+    static const String home = "home";
+    static const String sitio = "sitio";
 }
 
 abstract class ErrCode
