@@ -4,11 +4,15 @@ sitioServicesTests ()
 {
     MongoDbManager dbManager = new MongoDbManager("mongodb://${partialDBHost}/servicesTesting");
     MongoDb db;
+    MongoService mongoService;
+    SitioServices sitioServices;
     group("Sitio Services Tests:", ()
     {
         setUp(() async
         {
             db = await dbManager.getConnection();
+            mongoService = new MongoServiceMock.spy (new MongoService.fromMongoDb(db));
+            sitioServices = new SitioServices (mongoService);
         });
 
         //remove all loaded handlers
@@ -20,9 +24,6 @@ sitioServicesTests ()
         
         test("New", () async
         {
-            var mongoService = new MongoService.fromMongoDb(db);
-            var sitioServices = new SitioServices (mongoService);
-            
             var sitio = await sitioServices.New();
             
             expect (sitio.descripcion != null, true);
@@ -33,10 +34,6 @@ sitioServicesTests ()
         
         test("Get", () async
         {
-            //services
-            var mongoService = new MongoService.fromMongoDb(db);
-            var sitioServices = new SitioServices (mongoService);
-            
             //Nuevo Sitio
             var sitio = await sitioServices.New();
             
@@ -48,10 +45,6 @@ sitioServicesTests ()
         
         test("Update", () async
         {
-            //services
-            var mongoService = new MongoService.fromMongoDb(db);
-            var sitioServices = new SitioServices (mongoService);
-          
             //Nuevo Sitio
             var sitio = await sitioServices.New();
             
@@ -65,38 +58,20 @@ sitioServicesTests ()
         
         test("Delete", () async
         {
-            //services
-            var mongoService = new MongoService.fromMongoDb(db);
-            var sitioServices = new SitioServices (mongoService);
-          
             //Nuevo Sitio
             var sitio = await sitioServices.New();
             
             //Eliminar
             Ref ref = await sitioServices.Delete(sitio.id);
-            
             expect (ref.id, sitio.id);
             
-            bool elimino;
-            try
-            {
-                var sitioImposible = await sitioServices.Get (sitio.id);
-                elimino = false;
-            }
-            catch (e,s)
-            {
-                elimino = true;
-            }
-            
-            expect (elimino, true);
+            //Validar sitio borrado
+            var borrado = await sitioServices.findOne(where.id(StringToId(sitio.id)));
+            expect (borrado, null);
         });
         
         test("Agregar y Eliminar Imagen Slider", () async
         {
-            //services
-            var mongoService = new MongoService.fromMongoDb(db);
-            var sitioServices = new SitioServices (mongoService);
-          
             //Nuevo Sitio
             var sitio = await sitioServices.New();
             
@@ -122,10 +97,6 @@ sitioServicesTests ()
         
         test("Agregar y Eliminar Categoria", () async
         {
-            //services
-            var mongoService = new MongoService.fromMongoDb(db);
-            var sitioServices = new SitioServices (mongoService);
-          
             //Nuevo Sitio
             var sitio = await sitioServices.New();
             
@@ -151,10 +122,6 @@ sitioServicesTests ()
         
         test("Agregar y Eliminar Categoria Destacada", () async
         {
-            //services
-            var mongoService = new MongoService.fromMongoDb(db);
-            var sitioServices = new SitioServices (mongoService);
-          
             //Nuevo Sitio
             var sitio = await sitioServices.New();
             
