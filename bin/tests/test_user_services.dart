@@ -2,7 +2,7 @@ part of aristadart.tests;
 
 userServicesTests ()
 {
-    MongoDbManager dbManager = new MongoDbManager("mongodb://${partialDBHost}/userTesting");
+    MongoDbManager dbManager = new MongoDbManager("mongodb://${partialDBHost}/servicesTesting");
     group("User Tests", ()
     {
         //Definir usuario

@@ -1,9 +1,9 @@
 part of aristadart.general;
 
-class Categoria
+class Categoria extends Ref
 {
-    String nombre;
-    FileDb imagen; 
-    List<Producto> destacados;
+    @Field() String nombre;
+    @Field() FileDb imagen; 
+    @Field() List<Producto> destacados;
 }
 

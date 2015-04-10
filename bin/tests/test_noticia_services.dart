@@ -2,107 +2,112 @@ part of aristadart.tests;
 
 noticiaServicesTests ()
 {
-    MongoDbManager dbManager = new MongoDbManager("mongodb://${partialDBHost}/userTesting");
-    group("Noticia Services Tests", ()
+    group("Noticia Services Tests:", ()
     {
-        ProtectedUser basicUser;
-        var id = newId();
-        
-        createBasicUser () async
-        {
-            //Insertar usuario
-            MongoDb db = await dbManager.getConnection();
-            basicUser = new ProtectedUser()
-                ..id = newId()
-                ..admin = true;
-            
-            await db.insert (Col.user, basicUser);
-            dbManager.closeConnection (db);
-        }
-        
+        MongoDbManager dbManager = new MongoDbManager("mongodb://${partialDBHost}/servicesTesting");
+        MongoDb db;
+        MongoService mongoService;
+        NoticiaServices noticiaServices;
         setUp(() async
         {
-            app.addPlugin (getMapperPlugin(dbManager));
-            app.addPlugin (AuthenticationPlugin);
-            app.addPlugin (ErrorCatchPlugin);
-            
-            await createBasicUser();
+            db = await dbManager.getConnection();
+            mongoService = new MongoServiceMock.spy (new MongoService.fromMongoDb(db));
+            noticiaServices = new NoticiaServices (mongoService);
         });
 
         //remove all loaded handlers
         tearDown(() async
         {
-            app.tearDown();
-            
-            //Clear users
-            MongoDb db = await dbManager.getConnection();
-            await db.collection('user').drop();
-            dbManager.closeConnection(db);
+            await db.innerConn.drop();
+            dbManager.closeConnection (db);
         });
         
         test("New", () async
         {
-            var mongoService = new MongoServiceMock();
-            var noticia = new Noticia()
-                ..titulo = "Titulo"
-                ..texto = "Texto";
-            
-            //SETUP
-            app.addModule (new Module()
-                  ..bind(UserServives)
-                  ..bind(GoogleServices)//Injectar mock
-                  ..bind(FileServices)
-                  ..bind(MongoService, toValue: mongoService));
-          
-            app.setUp([#aristadart.server]);
-        
-            //Crear mock request
-            MockRequest req = new MockRequest
-            (
-                '/noticia', method: app.POST, headers: {Header.authorization : basicUser.id}
-            );
-      
-            //dispatch request
-            MockHttpResponse resp = await app.dispatch(req);
-            
-            Noticia respNoticia = decodeJson(resp.mockContent, Noticia);
-          
-            
-            
-            expect (respNoticia.titulo, noticia.titulo, reason: resp.mockContent);
-            expect (respNoticia.texto, noticia.texto);
-        });
-        
-        test("New 2", () async
-        {
-            var mongoService = new MongoServiceMock();
-            var noticia = new Noticia()
-                ..titulo = "Titulo"
-                ..texto = "Texto";
-            
-            var noticiaService = new NoticiaServices (mongoService);
-            
-            Noticia respNoticia = await noticiaService.New();
+            Noticia respNoticia = await noticiaServices.New();
              
-            expect (respNoticia.titulo, noticia.titulo);
-            expect (respNoticia.texto, noticia.texto);
+            expect (respNoticia.titulo != null, true);
+            expect (respNoticia.texto != null, true);
         });
         
         test("Get", () async
         {
-            var noticia = new Noticia()
-                ..titulo = "Titulo"
-                ..texto = "Texto"
-                ..id = newId();
+            Noticia noticia = await noticiaServices.New();
             
-            var mongoService = new MongoServiceMock()
-                ..when(callsTo('findOne')).thenReturn (new Future.value (noticia));
-            
-            var noticiaService = new NoticiaServices (mongoService);
-            
-            Noticia respNoticia = await noticiaService.Get (noticia.id);
+            Noticia respNoticia = await noticiaServices.Get (noticia.id);
              
-            expect (noticia, respNoticia);
+            expect (encode(noticia), encode(respNoticia));
+        });
+        
+        test("Update", () async
+        {
+            //Creat noticia
+            Noticia noticia = await noticiaServices.New();
+            
+            //Update
+            var cambio = "AAA";
+            var delta = new Noticia()
+                ..texto = cambio;
+            
+            Noticia noticiaActualizada = await noticiaServices.Update (noticia.id, delta);
+             
+            //Actualizar noticia original
+            noticia.texto = cambio;
+            
+            //Validar
+            expect (encode(noticia), encode(noticiaActualizada));
+        });
+        
+        test("Delete", () async
+        {
+            //Creat noticia
+            Noticia noticia = await noticiaServices.New();
+            
+            //Delete
+            Ref ref = await noticiaServices.Delete (noticia.id);
+             
+            //Validar id
+            expect(ref.id, noticia.id);
+            
+            //Validar noticia borrada
+            var borrada = await noticiaServices.findOne(where.id(StringToId(noticia.id)));
+            expect (borrada, null);
+        });
+        
+        test ("Ultimas", () async 
+        {
+            //Crear noticias
+            Iterable<Noticia> noticias = await Future.wait 
+            (
+                new Iterable
+                    .generate(10)
+                    .map((n) => noticiaServices.New())
+            );
+            
+            List<Noticia> ultimas5 = await noticiaServices.Ultimas(5);
+            
+            //Validar que todas las ultimas noticias sean noticias originales
+            expect (ultimas5.every((ultima) => noticias.any((noticia) => noticia.id == ultima.id)), true);
+            
+            //Eliminar una noticia de las ultimas
+            Ref borrada = await noticiaServices.Delete (ultimas5.first.id);
+            
+            //Validar noticia borrada
+            ultimas5 = await noticiaServices.Ultimas(5);
+            expect (ultimas5.any((noticia) => noticia.id == borrada.id), false);
+            var todas = await noticiaServices.find();
+            expect (todas.length, 9);
+            
+            //Guardar noticia mas vieja
+            var vieja = ultimas5.last;
+            
+            //Agregar nueva noticia
+            var nueva = await noticiaServices.New();
+            
+            //Validar noticia vieja no sea ultima noticia
+            ultimas5 = await noticiaServices.Ultimas(5);
+            expect (ultimas5.any((noticia) => noticia.id == vieja.id), false);
+            expect (ultimas5.first.id == nueva.id, true);
         });
     });
 }

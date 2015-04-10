@@ -11,21 +11,40 @@ class SitioServices extends AristaService<Sitio>
     @Private(ADMIN)
     Future<Sitio> New ()
     {
-        throw new UnimplementedError();
+        var sitio = new Sitio()
+            ..categorias = []
+            ..descripcion = "Descripcion"
+            ..destacadas = []
+            ..id = newId()
+            ..nombre = "Nuevo Sitio"
+            ..slider = [];
+        
+        return NewGeneric(sitio);
     }
     
     @app.Route ('/:id', methods: const [app.GET])
     @Private(ADMIN)
-    Future<Sitio> Get (String id, {@app.QueryParam() bool export: false})
+    Future<Sitio> Get (String id, {@app.QueryParam() bool export: false}) async
     {
-        throw new UnimplementedError();
+        if (export == true)
+        {
+            throw new UnimplementedError();
+        }
+        else
+        {
+            return GetGeneric(id);
+        }
     }
     
     @app.Route ('/:id', methods: const [app.PUT])
     @Private(ADMIN)
-    Future<Sitio> Update (String id, Sitio delta)
+    Future<Sitio> Update (String id, Sitio delta) async
     {
-        throw new UnimplementedError();
+        delta.id = null;
+        
+        await UpdateGeneric(id, delta);
+        
+        return Get (id);
     }
     
     //DELETE /:id ::
@@ -33,50 +52,98 @@ class SitioServices extends AristaService<Sitio>
     @Private(ADMIN)
     Future<Ref> Delete (String id)
     {
-        throw new UnimplementedError();
-    }
-
-    @app.Route ('/:id/agregarCategoria', methods: const [app.POST])
-    @Private(ADMIN)
-    Future<BoolResp> AgregarCategoria (String id, Categoria categoria)
-    {
-        throw new UnimplementedError();
+        return DeleteGeneric (id);
     }
     
-    @app.Route ('/:id/eliminarCategoria', methods: const [app.DELETE])
-    @Private(ADMIN)
-    Future<BoolResp> EliminarCategoria (String id, Categoria categoria)
-    {
-        throw new UnimplementedError();
-    }
-
-    @app.Route ('/:id/agregarCategoriaDestacada', methods: const [app.POST])
-    @Private(ADMIN)
-    Future<BoolResp> AgregarCategoriaDestacada (String id, Categoria categoria)
-    {
-        throw new UnimplementedError();
-    }
-    
-    @app.Route ('/:id/eliminarCategoriaDestacada', methods: const [app.DELETE])
-    @Private(ADMIN)
-    Future<BoolResp> EliminarCategoriaDestacada (String id, Categoria categoria)
-    {
-        throw new UnimplementedError();
-    }
-
     @app.Route ('/:id/agregarImagenSlider', methods: const [app.POST])
     @Private(ADMIN)
-    Future<BoolResp> AgregarImagenSlider (String id, ImagenSlider imagenSlider)
+    Future<BoolResp> AgregarImagenSlider (String id, ImagenSlider imagenSlider) async
     {
-        throw new UnimplementedError();
+        await mongoDb.update
+        (
+            collectionName,
+            where.id(StringToId(id)),
+            modify.push ("slider", mongoDb.encode(imagenSlider))
+        );
+        
+        return new BoolResp()..value = true;
     }
     
     @app.Route ('/:id/eliminarImagenSlider', methods: const [app.DELETE])
     @Private(ADMIN)
-    Future<BoolResp> EliminarImagenSlider (String id, ImagenSlider imagenSlider)
+    Future<BoolResp> EliminarImagenSlider (String id, ImagenSlider imagenSlider) async
     {
-        throw new UnimplementedError();
+        await mongoDb.update
+        (
+            collectionName,
+            where.id(StringToId(id)), 
+            modify.pull ("slider", mongoDb.encode(imagenSlider))
+        );
+        
+        return new BoolResp()
+            ..value = true;
     }
 
+    Future<BoolResp> AgregarCategoria (String id, Categoria categoria) async
+    {
+        categoria = new Categoria()
+            ..id = categoria.id;
+        
+        await mongoDb.update
+        (
+            collectionName,
+            where.id(StringToId(id)), 
+            modify.push ("categorias", mongoDb.encode(categoria))
+        );
+        
+        return new BoolResp()
+            ..value = true;
+    }
+
+    Future<BoolResp> EliminarCategoria (String id, Categoria categoria) async
+    {
+        await mongoDb.update
+        (
+            collectionName,
+            where.id(StringToId(id)), 
+            {
+                r'$pull': {'categorias': {'_id': StringToId (categoria.id)}}
+            }
+        );
+        
+        return new BoolResp()
+            ..value = true;
+    }
+    
+    Future<BoolResp> AgregarCategoriaDestacada (String id, Categoria categoria) async
+    {
+        categoria = new Categoria()
+            ..id = categoria.id;
+        
+        await mongoDb.update
+        (
+            collectionName,
+            where.id(StringToId(id)), 
+            modify.push ("destacadas", mongoDb.encode(categoria))
+        );
+        
+        return new BoolResp()
+            ..value = true;
+    }
+    
+    Future<BoolResp> EliminarCategoriaDestacada (String id, Categoria categoria) async
+    {
+        await mongoDb.update
+        (
+            collectionName,
+            where.id(StringToId(id)),
+            {
+                r'$pull': {'destacadas': {'_id': StringToId (categoria.id)}}
+            }
+        );
+        
+        return new BoolResp()
+            ..value = true;
+    }
 }
 

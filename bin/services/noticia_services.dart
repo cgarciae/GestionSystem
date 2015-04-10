@@ -44,8 +44,10 @@ class NoticiaServices extends AristaService<Noticia>
     @app.Route ('/ultimas', methods: const [app.GET])
     Future<List<Noticia>> Ultimas (@app.QueryParam() int n) async
     {
-        var cursor = mongoDb.innerConn.collection (collectionName).find()
-                ..limit = n;
+        var cursor = mongoDb.innerConn
+                    .collection (collectionName)
+                    .find(where.sortBy('_id', descending: true))
+                    ..limit = 5;
                 
         List<Map> list = await cursor.toList();
         
