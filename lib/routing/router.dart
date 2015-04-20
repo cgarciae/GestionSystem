@@ -46,10 +46,16 @@ void routeInitializer(Router router, RouteViewFactory view)
     
     view.configure
     ({
-        'sitio' : ngRoute
+        'sitio': ngRoute
         (
           path: '/sitio/:subsitio',
-          viewHtml: "<view-test></view-test>",
+          viewHtml: "<sitio></sitio>"
+        ),
+        
+        'home': ngRoute
+        (
+          path: '/home',
+          viewHtml: '<home></home>',
           defaultRoute: true
         )
     });

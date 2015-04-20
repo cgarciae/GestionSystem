@@ -2,7 +2,7 @@ part of aristadart.client;
 
 @Component
 (
-    selector : "view-test",
+    selector : "sitio",
     templateUrl: 'components/views/sitio/sitio.html'
 )
 class InnerViewTest
@@ -14,8 +14,6 @@ class InnerViewTest
   {
     subsitio = route.parameters["subsitio"];
     templateUrl = "view/sitio/${subsitio}.html";
-    
-    print ("INIT");
   }
   
   click ()
