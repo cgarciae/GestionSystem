@@ -2,9 +2,10 @@ part of aristadart.client;
 
 abstract class ClientService<T extends Ref>
 {
+    Requester requester;
     final String pathBase;
     
-    ClientService (this.pathBase);
+    ClientService (this.pathBase, this.requester);
     
     String href (String id) => '$pathBase/$id';
     
@@ -13,7 +14,7 @@ abstract class ClientService<T extends Ref>
     //BASIC METHODS
     ////////////////
     
-    Future<T> NewGeneric ({Map queryParams})
+    Future<T> NewGeneric ({Map queryParams, Map headers})
     {
         return private
         (
@@ -46,7 +47,7 @@ abstract class ClientService<T extends Ref>
     
     Future<Ref> DeleteGeneric (String id, {Map queryParams})
     {
-        return Requester.private
+        return requester.private
         (
             Ref,
             Method.DELETE,
@@ -57,7 +58,7 @@ abstract class ClientService<T extends Ref>
     
     Future AllGeneric (Type type, {Map queryParams})
     {
-        return Requester.private
+        return requester.private
         (
             type,
             Method.GET,
@@ -74,7 +75,7 @@ abstract class ClientService<T extends Ref>
         Map headers, void onProgress (dom.ProgressEvent p), 
         String userId, Map<String,String> params})
     {
-        return Requester.decoded
+        return requester.decoded
         (
             T, method, path, data: data, headers: headers,
             onProgress: onProgress, userId: userId, params: params
@@ -85,7 +86,7 @@ abstract class ClientService<T extends Ref>
                             Map headers, void onProgress (dom.ProgressEvent p), 
                             Map<String,String> params})                      
     {
-        return Requester.private
+        return requester.private
         (
             T, method, path, data: data, headers: headers,
             onProgress: onProgress, params: params
@@ -96,7 +97,7 @@ abstract class ClientService<T extends Ref>
                             void onProgress (dom.ProgressEvent p), String userId,
                             Map<String,String> params})
     {
-        return Requester.form
+        return requester.form
         (
             T, method, path, form, headers: headers,
             onProgress: onProgress,userId: userId,
@@ -120,7 +121,7 @@ abstract class ClientService<T extends Ref>
                     {Map headers, void onProgress (dom.ProgressEvent p), 
                     String userId, Map<String,String> params})
     {   
-        return Requester.json
+        return requester.json
         (
             T, method, path, obj, headers: headers,
             onProgress: onProgress, userId: userId,

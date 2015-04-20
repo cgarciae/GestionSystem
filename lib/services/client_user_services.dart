@@ -3,7 +3,7 @@ part of aristadart.client;
 @Injectable()
 class ClientUserServices extends ClientService<User>
 {
-    ClientUserServices () : super ("user");
+    ClientUserServices (Requester requester) : super (Col.user, requester);
     
     Future<User> NewOrLogin (User user)
     {
@@ -12,6 +12,6 @@ class ClientUserServices extends ClientService<User>
     
     Future<BoolResp> IsAdmin (String id)
     {
-        return Requester.private (BoolResp, Method.GET, '${href(id)}/isAdmin');
+        return requester.private (BoolResp, Method.GET, '${href(id)}/isAdmin');
     }
 }

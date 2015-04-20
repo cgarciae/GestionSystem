@@ -3,7 +3,7 @@ part of aristadart.client;
 const String loginRoute = "view/login_view.html";
 
 
-void recipeBookRouteInitializer(Router router, RouteViewFactory view) 
+void routeInitializer(Router router, RouteViewFactory view) 
 {
     
     ifLoggedIn (String route)
@@ -46,8 +46,12 @@ void recipeBookRouteInitializer(Router router, RouteViewFactory view)
     
     view.configure
     ({
-        
-        
+        'sitio' : ngRoute
+        (
+          path: '/sitio/:subsitio',
+          viewHtml: "<view-test></view-test>",
+          defaultRoute: true
+        )
     });
 } 
 

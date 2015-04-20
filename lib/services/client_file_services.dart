@@ -3,7 +3,7 @@ part of aristadart.client;
 @Injectable()
 class ClientFileServices extends ClientService<FileDb>
 {
-    ClientFileServices () : super ("file");
+    ClientFileServices (Requester requester) : super ("file", requester);
   
     Future<FileDb> New (dom.FormElement form, 
                         {String type, String system})
@@ -17,7 +17,7 @@ class ClientFileServices extends ClientService<FileDb>
         if (system != null)
             params['system'] = system;
         
-        return Requester.privateForm
+        return requester.privateForm
         (
             FileDb,
             Method.POST,
@@ -32,7 +32,7 @@ class ClientFileServices extends ClientService<FileDb>
         if (href == null)
             throw new ArgumentError.notNull ("Client Error: href es null");
         
-        return Requester.decoded
+        return requester.decoded
         (
             FileDb,
             Method.GET,
@@ -45,7 +45,7 @@ class ClientFileServices extends ClientService<FileDb>
         if (href == null)
             throw new ArgumentError.notNull ("Client Error: href es null");
         
-        return Requester.privateForm
+        return requester.privateForm
         (
             FileDb,
             Method.PUT,

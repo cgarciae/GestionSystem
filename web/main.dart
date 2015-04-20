@@ -19,12 +19,12 @@ class MyAppModule extends Module
     MyAppModule()
     {
         //Views
-        
+        bind (InnerViewTest);
         //Services
         bind (ClientUserServices);
         bind (ClientFileServices);
         //Router
-        bind (RouteInitializerFn, toValue: recipeBookRouteInitializer);
+        bind (RouteInitializerFn, toValue: routeInitializer);
         bind (NgRoutingUsePushState, toValue: new NgRoutingUsePushState.value(false));
     }
 }
